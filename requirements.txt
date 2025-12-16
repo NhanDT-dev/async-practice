@@ -1,0 +1,11 @@
+# Python Async Practice - Dependencies
+
+# Testing
+pytest>=7.0.0
+pytest-asyncio>=0.21.0
+
+# Optional: For real-world async I/O exercises
+# aiohttp>=3.8.0
+# aiofiles>=23.0.0
+# aiosqlite>=0.19.0
+# asyncpg>=0.28.0
