@@ -36,13 +36,24 @@ from typing import Any, Callable, Awaitable
 #   # Attempt 3: succeeds, return "Success"
 # =============================================================================
 
-async def retry_with_backoff(
-    func: Callable[[], Awaitable[Any]],
-    max_retries: int,
-    base_delay: float
-) -> Any:
-    # YOUR CODE HERE
-    pass
+
+async def retry_with_backoff(func: Callable[[], Awaitable[Any]], max_retries: int, base_delay: float) -> Any:
+    count = 0
+    delay = base_delay
+    last_exception = None
+
+    while count < max_retries:
+        try:
+            return await func()
+        except Exception as e:
+            last_exception = e
+            if count < max_retries - 1:
+                await asyncio.sleep(delay)
+                delay = delay * 2
+                count += 1
+            else:
+                break
+    raise last_exception
 
 
 # =============================================================================
@@ -63,12 +74,14 @@ async def retry_with_backoff(
 #   # Batch 3: tasks[4] runs alone
 # =============================================================================
 
-async def limited_gather(
-    coros: list[Awaitable[Any]],
-    limit: int
-) -> list[Any]:
-    # YOUR CODE HERE
-    pass
+
+async def limited_gather(coros: list[Awaitable[Any]], limit: int) -> list[Any]:
+    results = []
+    for i in range(0, coros.__len__(), limit):
+        batch = coros[i : i + limit]
+        result = await asyncio.gather(*batch)
+        results.extend(result)
+    return results
 
 
 # =============================================================================
@@ -89,12 +102,12 @@ async def limited_gather(
 #   # 5 -> add_one -> 6 -> double -> 12 -> to_string -> "12"
 # =============================================================================
 
-async def pipeline(
-    initial_value: Any,
-    stages: list[Callable[[Any], Awaitable[Any]]]
-) -> Any:
-    # YOUR CODE HERE
-    pass
+
+async def pipeline(initial_value: Any, stages: list[Callable[[Any], Awaitable[Any]]]) -> Any:
+    current_value = initial_value
+    for func in stages:
+        current_value = await func(current_value)
+    return current_value
 
 
 # =============================================================================
@@ -124,11 +137,26 @@ async def pipeline(
 #   # Returns "Success!"
 # =============================================================================
 
-async def first_successful(
-    funcs: list[Callable[[], Awaitable[Any]]]
-) -> Any:
-    # YOUR CODE HERE
-    pass
+
+async def first_successful(funcs: list[Callable[[], Awaitable[Any]]]) -> Any:
+    pending_tasks = [asyncio.create_task(func()) for func in funcs]
+    res = None
+    while not res:
+        done, pending = await asyncio.wait(pending_tasks, return_when=asyncio.FIRST_COMPLETED)
+
+        for task in done:
+            try:
+                result = task.result()
+                res = result
+            except Exception:
+                pass
+    for task in pending:
+        task.cancel()
+    
+    if res:
+        return res
+    else:
+        raise Exception("All failed")
 
 
 # =============================================================================
@@ -160,6 +188,18 @@ async def first_successful(
 #   # ["Handler1: 42", "Handler2: 42"]
 # =============================================================================
 
+
 class AsyncEventEmitter:
-    # YOUR CODE HERE
-    pass
+    def __init__(self):
+        self.tasks = {}
+
+    async def on(self, event_name, callback):
+        self.tasks.setdefault(event_name, [])[event_name].extend(callback)
+
+    async def emit(self, event_name, *args):
+        list_return = []
+        if self.tasks.get(event_name):
+            for func in self.tasks[event_name]:
+                list_return.extend(func(*args))
+        else:
+            raise Exception("No event found")
