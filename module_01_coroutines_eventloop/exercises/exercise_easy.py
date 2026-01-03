@@ -19,8 +19,9 @@ import asyncio
 # Example: say_hello("Alice") should return "Hello, Alice!"
 # =============================================================================
 
+
 async def say_hello(name: str) -> str:
-    # YOUR CODE HERE
+    print(f"Hello {name}")
     pass
 
 
@@ -35,9 +36,10 @@ async def say_hello(name: str) -> str:
 # Example: delayed_message("Hi", 1.0) waits 1 second, then returns "Hi"
 # =============================================================================
 
+
 async def delayed_message(message: str, delay: float) -> str:
-    # YOUR CODE HERE
-    pass
+    await asyncio.sleep(1.0)
+    await say_hello(message)
 
 
 # =============================================================================
@@ -51,9 +53,13 @@ async def delayed_message(message: str, delay: float) -> str:
 # Example: count_to_n(3) returns [1, 2, 3] after ~0.3 seconds
 # =============================================================================
 
+
 async def count_to_n(n: int) -> list[int]:
-    # YOUR CODE HERE
-    pass
+    list_result = []
+    for i in range(0, n):
+        await asyncio.sleep(0.1)
+        list_result.append(i)
+    return list_result
 
 
 # =============================================================================
@@ -67,9 +73,9 @@ async def count_to_n(n: int) -> list[int]:
 # Example: greet_twice("Bob") returns ("Hello, Bob!", "Hello, Bob!")
 # =============================================================================
 
+
 async def greet_twice(name: str) -> tuple[str, str]:
-    # YOUR CODE HERE
-    pass
+    return await say_hello(name), await say_hello(name)
 
 
 # =============================================================================
@@ -85,6 +91,10 @@ async def greet_twice(name: str) -> tuple[str, str]:
 #   fetch_data(-1) -> returns "Invalid ID" immediately
 # =============================================================================
 
+
 async def fetch_data(data_id: int) -> str:
-    # YOUR CODE HERE
-    pass
+    if data_id > 0:
+        await asyncio.sleep(0.1)
+        return f"Data-{data_id}"
+    else:
+        return "Invalid ID"

@@ -7,6 +7,9 @@ Run the tests to verify your solutions:
 """
 
 import asyncio
+import aiohttp
+import httpx
+import requests
 
 
 # =============================================================================
@@ -27,9 +30,9 @@ import asyncio
 #   -> Takes ~0.1s, NOT 0.3s
 # =============================================================================
 
+
 async def fetch_all(urls: list[str]) -> list[str]:
-    # YOUR CODE HERE
-    pass
+    return [f"Content from {url}" for url in urls]
 
 
 # =============================================================================
@@ -49,9 +52,19 @@ async def fetch_all(urls: list[str]) -> list[str]:
 #   -> "Bob" (because Bob has the shortest delay)
 # =============================================================================
 
+
 async def race(competitors: list[tuple[str, float]]) -> str:
-    # YOUR CODE HERE
-    pass
+    async def create_task(name: str, delay: float):
+        await asyncio.sleep(delay)
+        print(f"name: {name}")
+        return name
+
+    done, pending = await asyncio.wait([asyncio.create_task(create_task(comp[0], comp[1])) for comp in competitors], return_when=asyncio.tasks.FIRST_COMPLETED)
+    res = done.pop()
+    for p in pending:
+        p.cancel()
+
+    return res.result()
 
 
 # =============================================================================
@@ -70,9 +83,17 @@ async def race(competitors: list[tuple[str, float]]) -> str:
 #   fetch_with_timeout("example.com", 0.2) -> "Timeout: example.com"
 # =============================================================================
 
+
 async def fetch_with_timeout(url: str, timeout: float) -> str:
-    # YOUR CODE HERE
-    pass
+    async def fetch_url(url: str):
+        await asyncio.sleep(0.5)
+
+    try:
+        await asyncio.wait_for(fetch_url(url), timeout=timeout)
+        return f"Success: {url}"
+
+    except asyncio.TimeoutError:
+        return f"Timeout: {url}"
 
 
 # =============================================================================
@@ -95,9 +116,20 @@ async def fetch_with_timeout(url: str, timeout: float) -> str:
 #               "Processed: d", "Processed: e"]
 # =============================================================================
 
+
 async def process_batch(items: list[str], batch_size: int) -> list[str]:
-    # YOUR CODE HERE
-    pass
+    async def process_task(item: str):
+        await asyncio.sleep(0.1)
+        return f"Processed: {item}"
+
+    list_result = []
+    for i in range(0, len(items), batch_size):
+        batch = items[i:i + batch_size]
+        batch_result = await asyncio.gather(
+            *[process_task(item) for item in batch]
+        )
+        list_result.extend(batch_result)
+    return list_result
 
 
 # =============================================================================
@@ -125,9 +157,7 @@ async def process_batch(items: list[str], batch_size: int) -> list[str]:
 
 from typing import Callable, Awaitable
 
-async def async_map(
-    items: list[int],
-    func: Callable[[int], Awaitable[int]]
-) -> list[int]:
-    # YOUR CODE HERE
-    pass
+
+async def async_map(items: list[int], func: Callable[[int], Awaitable[int]]) -> list[int]:
+    list_tasks = [asyncio.create_task(func(item)) for item in items]
+    return await asyncio.gather(*list_tasks)

@@ -7,7 +7,7 @@ import asyncio
 import time
 import pytest
 
-from exercise_medium import (
+from module_01_coroutines_eventloop.exercises.exercise_medium import (
     fetch_all,
     race,
     fetch_with_timeout,
