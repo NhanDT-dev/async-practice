@@ -26,9 +26,12 @@ import asyncio
 #   # result == "Hello, Alice!"
 # =============================================================================
 
+
 async def create_greeting_task(name: str) -> asyncio.Task:
-    # YOUR CODE HERE
-    pass
+    async def say_hello(name: str):
+        return f"Hello, {name}!"
+
+    return asyncio.create_task(say_hello(name))
 
 
 # =============================================================================
@@ -48,9 +51,10 @@ async def create_greeting_task(name: str) -> asyncio.Task:
 #   # Returns 3
 # =============================================================================
 
+
 async def run_concurrent_tasks(delays: list[float]) -> int:
-    # YOUR CODE HERE
-    pass
+    tasks = [asyncio.create_task(asyncio.sleep(delay)) for delay in delays]
+    return len(tasks)
 
 
 # =============================================================================
@@ -67,9 +71,12 @@ async def run_concurrent_tasks(delays: list[float]) -> int:
 #   # await task == 10
 # =============================================================================
 
+
 async def create_named_task(task_name: str, value: int) -> tuple[str, asyncio.Task]:
-    # YOUR CODE HERE
-    pass
+    async def double(value: int):
+        return value * 2
+
+    return task_name, asyncio.create_task(double(value), name=task_name)
 
 
 # =============================================================================
@@ -87,9 +94,17 @@ async def create_named_task(task_name: str, value: int) -> tuple[str, asyncio.Ta
 #   # info == {"was_done_before": False, "is_done_after": True, "result": "done"}
 # =============================================================================
 
+
 async def task_status_info() -> dict:
-    # YOUR CODE HERE
-    pass
+    async def delay_task():
+        await asyncio.sleep(0.2)
+        return "done"
+
+    task = asyncio.create_task(delay_task())
+    was_done_before = task.done()
+    await task
+    is_done_after = task.done()
+    return {"was_done_before": was_done_before, "is_done_after": is_done_after, "result": task.result()}
 
 
 # =============================================================================
@@ -108,6 +123,10 @@ async def task_status_info() -> dict:
 #   results = [await t for t in tasks]  # [2, 4, 6]
 # =============================================================================
 
+
 async def fire_and_forget(values: list[int]) -> list[asyncio.Task]:
-    # YOUR CODE HERE
-    pass
+    async def double_value(value: int):
+        await asyncio.sleep(0.1)
+        return value * 2
+
+    return [asyncio.create_task(double_value(value)) for value in values]
